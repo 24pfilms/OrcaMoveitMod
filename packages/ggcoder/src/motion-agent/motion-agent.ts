@@ -5,6 +5,7 @@ import { AgentSession, type AgentSessionOptions } from "../core/agent-session.js
 import { findMotionBundle, loadMotionSkills, type MotionBundle } from "../core/skills.js";
 import { MOTION_SYSTEM_PROMPT } from "./motion-prompt.js";
 import { createMotionCheckTool } from "./motion-check-tool.js";
+import { createReferenceTool } from "./reference-tool.js";
 import { createGenerateSpeechTool, type ProbeDuration } from "../tools/generate-speech.js";
 import { createGenerateVideoTool } from "../tools/generate-video.js";
 import { motionStudioPrompt, readMotionStudioContext } from "./motion-studio-context.js";
@@ -39,6 +40,7 @@ export const MOTION_TOOL_NAMES = [
   "generate_image",
   "generate_speech",
   "generate_video",
+  "analyze_reference",
   "motion_check",
 ] as const;
 
@@ -165,6 +167,7 @@ export async function createMotionAgentSession(options: MotionAgentOptions): Pro
       createMotionCheckTool(options.cwd, bundle),
       createGenerateSpeechTool(options.cwd, probeDurationWith(bundle)),
       createGenerateVideoTool(options.cwd),
+      createReferenceTool(options.cwd, bundle),
     ],
     allowedTools: [...MOTION_TOOL_NAMES],
     allowedMcpServers: [],

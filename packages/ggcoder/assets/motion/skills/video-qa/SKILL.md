@@ -46,6 +46,14 @@ dimensions, evidence only, one round of fixes for anything at 2 or below. When
 guessing from stills. Skip this for copy edits and small fixes; rescore only what
 an edit touched.
 
+When `frame.md` has a `Reference` line, also run `analyze_reference` with the
+export as `source`, that reference as `compare` and, when the video has music,
+its beat grid as `beats`. It measures your render the
+same way and lists gaps (shot length, hook, opening density, pacing shape,
+motion amount, cuts on the beat), each with a fix; `notCompared` says which
+checks lacked the data to run. Use them as evidence for the
+Hook, Variety and Rhythm scores; fix only the gaps that serve the plan.
+
 The rubric turns "it could be better" into a named, located fix. It does not
 license a redesign: dimensions at 3 or above stay as they are.
 

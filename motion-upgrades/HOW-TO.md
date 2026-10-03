@@ -1,6 +1,6 @@
 # How to use the Motion upgrades
 
-This guide explains the six new Motion features: what each one does, how to
+This guide explains the seven new Motion features: what each one does, how to
 turn it on and how to use it. It also covers what each one can't do yet.
 
 Motion is the part of GG that makes short videos. You describe the video you
@@ -43,13 +43,15 @@ that GG loads.
 | Voiceover with exact captions | `ELEVENLABS_API_KEY` | elevenlabs.io → Profile → API keys |
 | Voiceover (backup choice) | `OPENAI_API_KEY` | platform.openai.com → API keys |
 | Generated video clips | `FAL_KEY` and `GG_VIDEO_MODEL` | fal.ai → Dashboard → Keys |
+| Reference analysis (descriptions) | `GEMINI_API_KEY` | aistudio.google.com → Get API key |
 
 `GG_VIDEO_MODEL` is the name of the fal.ai video model you want to use, written
 the way fal.ai shows it, for example `fal-ai/some-model/image-to-video`. Pick one
 from fal.ai's model list. Models change often, so the patch doesn't choose one
 for you.
 
-Features 1, 2, 3 and 5 need no keys.
+Features 1, 2, 3 and 5 need no keys. Feature 7 measures without a key and
+needs `GEMINI_API_KEY` only for its descriptions.
 
 ---
 
@@ -277,13 +279,83 @@ publish the video.
 
 ---
 
+## Feature 7: Reference analysis
+
+**What it does.** You give Motion a video you admire. It returns the parts that
+make that video work, in a form Motion can build with:
+
+- **Measured from the pixels, accurate to one frame:** every cut, each shot's
+  length, the pacing curve (does the edit speed up or slow down?), how much each
+  shot moves, each shot's main colours and, with a beat grid, how many cuts land
+  on the beat.
+- **Described by Gemini:** each shot's size, the camera move with its direction,
+  speed and ease, the subject, on-screen text and when it appears, how each
+  shot ends (cut, whip, dissolve and so on), the hook, and three to five
+  reasons the video works, each tied to a time.
+
+The two halves are kept apart. Timing always comes from measurement, because
+Gemini looks at only a few frames per second. When they disagree, for example
+when Gemini calls a shot "push-in" but the pixels barely change, the result
+lists the disagreement instead of hiding it.
+
+**How to use it.**
+
+1. Put the video in your project folder (or paste a public YouTube link).
+2. Ask for it plainly: "Make mine feel like `ref.mp4`" or "Study the camera
+   moves in this video." Motion runs `analyze_reference` and saves
+   `reference/<name>.reference.json`.
+3. Motion writes what it will take from the reference on the `Reference:` line
+   of `frame.md`, usually the rhythm, the opening and the camera language.
+
+**Three things to ask for.**
+
+| Ask | What happens |
+|-----|--------------|
+| "Cut mine like this, 30 seconds long." | **Pacing plan.** The reference's cut positions are scaled to 30 s. If your music is chosen, each cut moves to a beat within 0.15 s. Motion builds scenes on those cuts. |
+| "How does mine compare?" | **Gap report.** Your render is measured the same way and compared: shot length, how fast the first cut comes, cuts in the first 3 seconds, whether the pace speeds up or slows down, amount of movement and cuts on the beat. Each gap comes with a fix. This runs by itself during checking when `frame.md` has a `Reference:` line. |
+| "What makes this opening work?" | Add a focus, such as "the first 3 seconds". Gemini studies that part most closely. |
+
+**Run the measurement yourself.** No key is needed:
+
+```bash
+node packages/ggcoder/assets/motion/bin/ref-measure.mjs ref.mp4
+node packages/ggcoder/assets/motion/bin/ref-measure.mjs ref.mp4 --target 30 --target-beats my-beats.json
+node packages/ggcoder/assets/motion/bin/ref-measure.mjs my-render.mp4 --compare reference/ref.reference.json
+```
+
+**Settings.** `GG_GEMINI_VISION_MODEL` picks the Gemini model (default
+`gemini-flash-latest`). Short videos are sampled at up to 5 frames per second,
+long ones at 1. Files under 14 MB are sent inline; larger ones are uploaded
+first.
+
+**Limits.**
+
+- YouTube links get descriptions only, with approximate timing. Pacing plans
+  and gap reports need a local file.
+- Slow dissolves and match cuts can be missed as cuts. Ask Motion to "measure
+  softer cuts" (it lowers `threshold` to about 0.2), or use `--threshold 0.2` on
+  the command line. A comparison reuses the reference's threshold so both
+  videos are measured the same way.
+- The "cuts on the beat" comparison needs a beat grid for both videos: the
+  reference's music when it was analysed, and yours when comparing. Without
+  them, the report lists that check under `notCompared`.
+- The measured length is the picture's, not the file's: music that runs past
+  the last frame doesn't stretch the shots.
+- "Motion amount" counts every moving pixel, camera and subject together. Exact
+  camera paths are a later phase (see REFERENCE-ANALYSIS.md).
+- Motion uses a reference for timing, structure and camera language only.
+  It never reuses the footage, music, logos, wording or exact layouts.
+
+---
+
 ## The new lines in `frame.md`
 
-Each video project keeps a short plan in `frame.md`. Three lines are new:
+Each video project keeps a short plan in `frame.md`. Four lines are new:
 
 ```text
 Taste: variety 6 · motion 4 · density 3; avoid: stock purple gradients, a centred headline in every scene
 Audio: music/quiet-morning.mp3 + cues/quiet-morning.music-cues.json
+Reference: reference/ref.reference.json · take the pacing and the opening push-in
 Craft: hook 4 · hierarchy 4 · purpose 3 · variety 3 · rhythm 4 · discipline 5 · ending 4 (round 1)
 ```
 
@@ -295,6 +367,7 @@ Craft: hook 4 · hierarchy 4 · purpose 3 · variety 3 · rhythm 4 · discipline
   The "avoid" list names specific things this video must not look like.
 - **Audio** records which music or voice the video uses and where its timing
   comes from.
+- **Reference** names the reference analysis and what this video takes from it.
 - **Craft** holds the scores from Feature 1.
 
 You can edit these lines yourself. For example, change `motion 4` to
@@ -311,4 +384,7 @@ You can edit these lines yourself. For example, change `motion 4` to
 | Captions drift away from the voice | OpenAI voice with estimated timing | Switch to ElevenLabs for exact timing |
 | No `rhythm` report after the check | The video has no music, or no beat map was given | Add music with a cues file, or run `beat-sync.mjs` yourself |
 | Beat sync finds no cuts | Transitions are slow fades | Run it with `--threshold 0.15` |
+| "No GEMINI_API_KEY" in a reference result | Key not set | Add `GEMINI_API_KEY`. Measurements still work without it |
+| Reference shows fewer cuts than you see | Soft transitions | Ask for softer cut detection (`threshold` 0.2) |
+| "That reference has no measurements" | It came from a YouTube link | Analyse a local copy of the video first |
 | No look preview appeared | Video is under 30 seconds, or you gave a detailed brief | Expected. Ask "show me the look first" if you want one anyway |

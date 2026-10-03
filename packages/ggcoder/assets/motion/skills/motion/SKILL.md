@@ -131,6 +131,7 @@ Concept: <the idea it demonstrates; the motif linking scenes>
 Language: <register, palette roles, type roles, beat, arc, fps>
 Taste: variety <1-10> · motion <1-10> · density <1-10>; avoid: <2-3 things this video must not look like>
 Audio: <music file + beat grid | voice file + words.json | silent>
+Reference: <.reference.json path + what to take from it (pacing, camera, hook) | none>
 Craft: <rubric scores after the check; see video-qa>
 ```
 
@@ -179,6 +180,26 @@ For implementation details, consult only the relevant runtime document:
 
 Run `hf doctor` once before the first render. Reuse healthy setup and preview
 servers.
+
+## Reference videos
+
+When the user shares a video they want theirs to feel like, run
+`analyze_reference` on it before planning (a workspace file gives exact timing;
+a YouTube link gives descriptions only). If it has music, pass its beat grid
+(`hf beats` on the file) as `beats`, so later comparisons can check cuts on the
+beat. For soft edits (dissolves, match cuts), lower `threshold` to about 0.2. Read its `whyItWorks`, hook, pacing
+curve and camera moves, then decide what to take: usually the rhythm, the
+opening and the camera language. Write that on the `Reference` line.
+
+- **Pacing.** Pass `targetDuration` (and `targetBeats` when your music is
+  chosen) to get cut positions that keep the reference's rhythm at your length.
+  Build scenes on those cuts.
+- **Camera and transitions.** Use the described moves and their `cameraDetail`
+  (direction, speed, ease) as the starting point for your own animation.
+- **Conflicts.** Where measurement and description disagree, trust the
+  measurement.
+- **Never copy** the reference's footage, music, logos, wording or exact
+  layouts, and change at least the subject and the look.
 
 ## Sound and footage
 

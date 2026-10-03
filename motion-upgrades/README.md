@@ -1,8 +1,8 @@
 # Motion upgrades
 
 This repo is [gg-framework](https://github.com/KenKaiii/gg-framework) at
-upstream commit `db99030`, plus six upgrades to Motion, its video agent.
-Everything is in one commit, so `git show HEAD~1` shows the full change.
+upstream commit `db99030`, plus seven upgrades to Motion, its video agent.
+The first six upgrades are in one commit; reference analysis has its own commit.
 
 - **Craft score**: a seven-part quality score with one round of fixes
 - **Look preview**: three stills to approve before a long video is finished
@@ -10,8 +10,12 @@ Everything is in one commit, so `git show HEAD~1` shows the full change.
 - **Voiceover**: a spoken script with captions timed to each word
 - **Mood music**: tracks listed and picked by mood
 - **Generated footage**: paid video clips, only after you agree to the cost
+- **Reference analysis**: breaks down a video you admire into cut timing, pacing,
+  camera moves and hook; turns its rhythm into a plan for your length; and
+  compares your render with it
 
-How to use them: [HOW-TO.md](HOW-TO.md).
+How to use them: [HOW-TO.md](HOW-TO.md). Research behind reference analysis:
+[REFERENCE-ANALYSIS.md](REFERENCE-ANALYSIS.md).
 
 Some ideas came from [OpenMontage](https://github.com/calesthio/OpenMontage).
 No OpenMontage code was copied.

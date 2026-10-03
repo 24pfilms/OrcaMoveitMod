@@ -431,6 +431,7 @@ describe("Motion agent", () => {
       "motion_check",
       "generate_speech",
       "generate_video",
+      "analyze_reference",
     ]);
     for (const name of [
       "spawn_agent",
@@ -454,6 +455,7 @@ describe("Motion agent", () => {
       "generate_image",
       "generate_speech",
       "generate_video",
+      "analyze_reference",
       "motion_check",
     ])
       expect(options.allowedTools).toContain(name);

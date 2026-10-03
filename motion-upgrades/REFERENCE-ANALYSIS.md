@@ -201,6 +201,10 @@ Motion then writes the parts it uses into `frame.md`. The
 
 ## 6. Build plan
 
+**Status:** phases A, B and C are built and tested (`ref-measure.mjs`,
+`analyze_reference`, and the gap report used in video-qa's craft score). D and
+E are still to do. See Feature 7 in [HOW-TO.md](HOW-TO.md).
+
 | Phase | Deliverable | Needs |
 |-------|-------------|-------|
 | A | `ref-measure.mjs`: cuts, shot lengths, motion energy, palette, beats → JSON | FFmpeg (bundled) |
