@@ -1,0 +1,180 @@
+import { useEffect, useState } from "react";
+import { theme } from "./theme";
+import {
+  arrangeAllWindows,
+  focusWindowByOffset,
+  getSettings,
+  listSessions,
+  selectWorkspace,
+  waitForReady,
+  type ChatAgentId,
+  type RecentSession,
+} from "./agent";
+import { motionWorkspacePath } from "./motion-workspace";
+import { Badge } from "./Badge";
+import { BackButton } from "./BackButton";
+import { ListSkeleton } from "./Skeleton";
+import { RadioButton } from "./RadioButton";
+import { WindowLayoutButton } from "./WindowLayoutButton";
+import { MetalButton } from "./MetalButton";
+import { useWindowFocused } from "./useWindowFocused";
+
+interface Props {
+  onChosen: (cwd: string) => void;
+  onClose?: () => void;
+  initialAgent?: ChatAgentId;
+  /** Which non-coding workspace this picker opens. Defaults to chat. */
+  mode?: "chat" | "motion";
+}
+
+const COPY = {
+  chat: {
+    title: "Chats",
+    newLabel: "+ New chat",
+    empty: "No previous chats yet.",
+    noRoot: "Choose a projects folder in Settings before starting a chat.",
+    loadError: "Chats could not be loaded.",
+  },
+  motion: {
+    title: "Motion",
+    newLabel: "+ New video",
+    empty: "No motion sessions yet.",
+    noRoot: "Choose a projects folder in Settings before starting a video.",
+    loadError: "Motion sessions could not be loaded.",
+  },
+} as const;
+
+/** Session chooser for Chat or Motion, rooted at the configured projects folder. */
+export function ChatPicker({
+  onChosen,
+  onClose,
+  initialAgent = "general",
+  mode = "chat",
+}: Props): React.ReactElement {
+  const copy = COPY[mode];
+  const windowFocused = useWindowFocused();
+  const [projectsRoot, setProjectsRoot] = useState("");
+  const [sessions, setSessions] = useState<RecentSession[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent): void => {
+      const meta = event.metaKey || event.ctrlKey;
+      if (!meta) return;
+      if (event.code === "Backquote" && !event.altKey) {
+        event.preventDefault();
+        void focusWindowByOffset(event.shiftKey ? -1 : 1);
+      } else if (event.shiftKey && (event.key === "a" || event.key === "A") && !event.altKey) {
+        event.preventDefault();
+        void arrangeAllWindows();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+    void getSettings()
+      .then(async (settings) => {
+        const projects = settings?.projectsRoot.trim() ?? "";
+        if (!projects) throw new Error(copy.noRoot);
+        const root = mode === "motion" ? motionWorkspacePath(projects) : projects;
+        if (!cancelled) setProjectsRoot(root);
+        await waitForReady();
+        return listSessions(root, mode === "motion" ? "motion" : "all");
+      })
+      .then((recent) => {
+        if (!cancelled) setSessions(recent);
+      })
+      .catch((reason: unknown) => {
+        if (!cancelled) {
+          setError(reason instanceof Error ? reason.message : copy.loadError);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [copy, mode]);
+
+  function choose(session?: RecentSession): void {
+    if (busy || !projectsRoot) return;
+    setBusy(true);
+    void selectWorkspace(mode, projectsRoot, session?.path, session?.chatAgent ?? initialAgent)
+      .then(() => onChosen(projectsRoot))
+      .catch(() => setBusy(false));
+  }
+
+  return (
+    <div className="picker chat-picker">
+      <div className="picker-head" data-tauri-drag-region>
+        {onClose ? <BackButton label="Back" onClick={onClose} /> : null}
+        <span className="picker-title">{copy.title}</span>
+        {!loading && !error && <Badge>{sessions.length}</Badge>}
+        <span className="picker-head-actions">
+          <MetalButton
+            windowFocused={windowFocused}
+            className="btn btn-primary btn-sm"
+            disabled={busy || loading || !projectsRoot}
+            onClick={() => choose()}
+          >
+            {copy.newLabel}
+          </MetalButton>
+          <RadioButton />
+          <WindowLayoutButton />
+        </span>
+      </div>
+
+      <div className="picker-list">
+        {loading && <ListSkeleton rows={5} />}
+        {!loading && error && (
+          <div className="picker-empty" style={{ color: theme.textMuted }}>
+            {error}
+          </div>
+        )}
+        {!loading && !error && sessions.length === 0 && (
+          <div className="picker-empty">
+            <span style={{ color: theme.textMuted }}>{copy.empty}</span>
+            <MetalButton
+              windowFocused={windowFocused}
+              className="btn btn-primary btn-sm"
+              disabled={busy}
+              onClick={() => choose()}
+            >
+              {copy.newLabel}
+            </MetalButton>
+          </div>
+        )}
+        {!loading && !error && sessions.length > 0 && (
+          <div className="picker-reveal">
+            {sessions.map((session) => (
+              <button
+                key={session.id}
+                className="picker-item"
+                disabled={busy}
+                onClick={() => choose(session)}
+              >
+                <span className="picker-row">
+                  <span className="picker-name picker-preview" style={{ color: theme.text }}>
+                    {session.preview || "(no preview)"}
+                  </span>
+                  <Badge>{session.lastActiveDisplay}</Badge>
+                </span>
+                <span className="picker-meta" style={{ color: theme.textMuted }}>
+                  {`${session.messageCount} msgs`}
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
