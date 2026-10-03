@@ -1,0 +1,88 @@
+{
+  "version": 1,
+  "note": "Pick by mood, then energy, then a duration at least as long as the video. Moods without a track here (calm, tender, serious, cinematic, playful) go to score-synth.mjs until tracks are added.",
+  "moods": [
+    "upbeat",
+    "cheerful",
+    "business",
+    "calm",
+    "tender",
+    "serious",
+    "cinematic",
+    "playful",
+    "dark",
+    "inspiring"
+  ],
+  "tracks": [
+    {
+      "file": "happy-beats-business-moves-vol-1-by-ende-dot-app.mp3",
+      "title": "Happy Beats Business Moves Vol 1",
+      "moods": [
+        "upbeat",
+        "cheerful",
+        "business"
+      ],
+      "energy": "medium-high",
+      "bpm": 120,
+      "duration": 164.0,
+      "cues": "cues/happy-beats-business-moves-vol-1-by-ende-dot-app.music-cues.json",
+      "license": "CC BY 4.0 (see README)"
+    },
+    {
+      "file": "happy-beats-business-moves-vol-10-by-ende-dot-app.mp3",
+      "title": "Happy Beats Business Moves Vol 10",
+      "moods": [
+        "upbeat",
+        "cheerful",
+        "business"
+      ],
+      "energy": "medium-high",
+      "bpm": 110,
+      "duration": 60.0,
+      "cues": "cues/happy-beats-business-moves-vol-10-by-ende-dot-app.music-cues.json",
+      "license": "CC BY 4.0 (see README)"
+    },
+    {
+      "file": "happy-beats-business-moves-vol-11-by-ende-dot-app.mp3",
+      "title": "Happy Beats Business Moves Vol 11",
+      "moods": [
+        "upbeat",
+        "cheerful",
+        "business"
+      ],
+      "energy": "medium-high",
+      "bpm": 115,
+      "duration": 87.6,
+      "cues": "cues/happy-beats-business-moves-vol-11-by-ende-dot-app.music-cues.json",
+      "license": "CC BY 4.0 (see README)"
+    },
+    {
+      "file": "happy-beats-business-moves-vol-12-by-ende-dot-app.mp3",
+      "title": "Happy Beats Business Moves Vol 12",
+      "moods": [
+        "upbeat",
+        "cheerful",
+        "business"
+      ],
+      "energy": "medium-high",
+      "bpm": 110,
+      "duration": 117.4,
+      "cues": "cues/happy-beats-business-moves-vol-12-by-ende-dot-app.music-cues.json",
+      "license": "CC BY 4.0 (see README)"
+    },
+    {
+      "file": "happy-beats-business-moves-vol-9-by-ende-dot-app.mp3",
+      "title": "Happy Beats Business Moves Vol 9",
+      "moods": [
+        "upbeat",
+        "cheerful",
+        "business"
+      ],
+      "energy": "medium-high",
+      "bpm": 115,
+      "duration": 113.6,
+      "cues": "cues/happy-beats-business-moves-vol-9-by-ende-dot-app.music-cues.json",
+      "license": "CC BY 4.0 (see README)"
+    }
+  ]
+}

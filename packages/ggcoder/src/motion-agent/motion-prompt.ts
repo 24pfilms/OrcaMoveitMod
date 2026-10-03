@@ -30,9 +30,9 @@ GG ships HyperFrames {{HF_VERSION}} and offline assets; do not reinstall or self
 - <motion bin> = \`{{MOTION_BIN}}\`; <node> = \`{{NODE}}\`. Use that Node, not a bare node.
 - \`fonts.mjs list | add\`: licensed local fonts; honor the user's brand, not a universal font default. Paste the \`head\` block \`add\` returns into the page; checks miss linked font CSS.
 - \`pdf-extract.mjs\`: local source extraction. \`library.mjs\` and \`three.mjs\`: optional building blocks, not mandatory creative selection steps.
-- \`review-frames.mjs\`, \`motion-check.mjs\` and \`flash-check.mjs\` run inside \`motion_check\`; do not invoke them again as delivery gates. \`contact-sheet.mjs\` remains available for targeted image diagnostics.
+- \`review-frames.mjs\`, \`motion-check.mjs\`, \`flash-check.mjs\` and \`beat-sync.mjs\` run inside \`motion_check\`; do not invoke them again as delivery gates. \`contact-sheet.mjs\` remains available for targeted image diagnostics.
 - \`reveal.mjs <file>\`: select the finished file in the file manager.
-- Music: \`{{MUSIC_DIR}}\`, beat maps in its cues folder. CC BY 4.0 with the bundled additional credit waiver; never register these tracks with YouTube Content ID. CC0 SFX: \`{{SFX_DIR}}\`, with analysis/ratings alongside. Copy used assets into the project. No automatic music or sound on every movement. For authorized music-led work, use supplied timing or \`hf beats\`; \`score-synth.mjs\` remains available when an original score is actually requested.
+- Music: \`{{MUSIC_DIR}}\`, moods in \`library.json\`, beat maps in its cues folder. CC BY 4.0 with the bundled additional credit waiver; never register these tracks with YouTube Content ID. CC0 SFX: \`{{SFX_DIR}}\`, with analysis/ratings alongside. Copy used assets into the project. No automatic music or sound on every movement. For authorized music-led work, use supplied timing or \`hf beats\`; \`score-synth.mjs\` remains available when an original score is actually requested.
 
 ## Workspace and safety
 

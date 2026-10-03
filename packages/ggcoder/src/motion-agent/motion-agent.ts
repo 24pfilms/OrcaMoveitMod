@@ -1,8 +1,12 @@
+import { execFile } from "node:child_process";
 import path from "node:path";
+import { promisify } from "node:util";
 import { AgentSession, type AgentSessionOptions } from "../core/agent-session.js";
 import { findMotionBundle, loadMotionSkills, type MotionBundle } from "../core/skills.js";
 import { MOTION_SYSTEM_PROMPT } from "./motion-prompt.js";
 import { createMotionCheckTool } from "./motion-check-tool.js";
+import { createGenerateSpeechTool, type ProbeDuration } from "../tools/generate-speech.js";
+import { createGenerateVideoTool } from "../tools/generate-video.js";
 import { motionStudioPrompt, readMotionStudioContext } from "./motion-studio-context.js";
 
 /**
@@ -33,8 +37,38 @@ export const MOTION_TOOL_NAMES = [
   "web_fetch",
   "screenshot",
   "generate_image",
+  "generate_speech",
+  "generate_video",
   "motion_check",
 ] as const;
+
+const exec = promisify(execFile);
+
+/** Audio duration via the same ffprobe Motion's checks use; null when unreadable. */
+function probeDurationWith(bundle: MotionBundle): ProbeDuration {
+  return async (file, signal) => {
+    try {
+      const found = await exec(
+        process.execPath,
+        [path.join(bundle.root, "bin", "media-binaries.mjs")],
+        {
+          signal,
+          windowsHide: true,
+        },
+      );
+      const { ffprobe } = JSON.parse(found.stdout) as { ffprobe: string };
+      const probed = await exec(
+        ffprobe,
+        ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", file],
+        { signal, windowsHide: true },
+      );
+      const seconds = Number(probed.stdout.trim());
+      return Number.isFinite(seconds) && seconds > 0 ? seconds : null;
+    } catch {
+      return null;
+    }
+  };
+}
 
 /** Motion's private session store, beside coder's `sessions/` and chat's `chat-sessions/`. */
 export function motionSessionsDir(coderSessionsDir: string): string {
@@ -129,6 +163,8 @@ export async function createMotionAgentSession(options: MotionAgentOptions): Pro
     additionalTools: [
       ...(sessionOptions.additionalTools ?? []),
       createMotionCheckTool(options.cwd, bundle),
+      createGenerateSpeechTool(options.cwd, probeDurationWith(bundle)),
+      createGenerateVideoTool(options.cwd),
     ],
     allowedTools: [...MOTION_TOOL_NAMES],
     allowedMcpServers: [],

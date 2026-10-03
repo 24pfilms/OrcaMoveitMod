@@ -69,9 +69,16 @@ answer in them.
      muted.
    - I'll add music myself: Silent for now, with a steady rhythm so your music is
      easy to add.
-3. "Do you have anything it should include?" (pick any): My logo or colours ·
+3. "Should someone talk in it?" Ask only when a voice would change the video
+   (an explainer, a product walkthrough, a story) and a voice tool is available.
+   - Yes, a voice explains it: I'll write the words, record a natural voice and
+     put matching captions on screen.
+   - No voice, text only: Works with the sound off.
+   - I'll record it myself: I'll leave room for your voice and time it once you
+     send the recording.
+4. "Do you have anything it should include?" (pick any): My logo or colours ·
    My photos or videos · Exact words or numbers · Nothing, start fresh
-4. "What should people get from it?"
+5. "What should people get from it?"
    - Understand something: Explains an idea, a process or some numbers, step by
      step.
    - Want to buy or try it: Shows what it does for them and ends with one clear
@@ -79,14 +86,14 @@ answer in them.
    - Hear some news: A launch, an event or a milestone.
    - Feel something: A mood piece, celebration or tribute, led by feeling rather
      than facts.
-5. "How should it feel?"
+6. "How should it feel?"
    - Calm and clear: Gentle movement and time to read. Nothing flashy.
    - Bold and energetic: Quick cuts, big words, a strong beat.
    - Playful: Bright and bouncy, with a bit of fun.
    - Elegant: Slow, precise and spacious, like a luxury ad.
    - Warm and personal: Soft and unhurried; lets photos and moments breathe.
    - Serious and respectful: Restrained, for sensitive or factual subjects.
-6. "How long should it be?"
+7. "How long should it be?"
    - About 10 seconds: One idea, quick to watch.
    - About 30 seconds: Room for a short story or a few points.
    - About a minute: Room to explain something step by step.
@@ -122,13 +129,34 @@ Overrides: <explicitly requested departures | none>
 Limits: <missing/unsupported behaviour and verification status>
 Concept: <the idea it demonstrates; the motif linking scenes>
 Language: <register, palette roles, type roles, beat, arc, fps>
+Taste: variety <1-10> · motion <1-10> · density <1-10>; avoid: <2-3 things this video must not look like>
+Audio: <music file + beat grid | voice file + words.json | silent>
+Craft: <rubric scores after the check; see video-qa>
 ```
+
+`Taste` turns the register into three numbers the build is held to: how much
+the look changes between scenes, how much things move, how much is on screen at
+once. High motion with low density means short, punchy beats; low motion with
+high density means steady frames and long reading holds. Name what to avoid in
+concrete terms ("stock purple gradients", "every scene a centred headline"),
+not adjectives.
 
 Record the user's answers in `Viewer` so follow-ups don't ask again.
 
-Reuse it for follow-ups. Do not create a director packet, storyboard, staged
-approval files or a separate brand system. Preserve existing `DESIGN.md`, brief
+Reuse it for follow-ups. Do not create a director packet, storyboard files,
+staged approval files or a separate brand system. Preserve existing `DESIGN.md`, brief
 or storyboard files if a legacy project has them.
+
+## Preview key frames (bigger videos only)
+
+For a new video of 30 seconds or more, or a launch, brand or paid piece, show
+the look before the full render. Build the first scene and one middle scene,
+then capture three stills with `hf check --snapshots --at <hook>,<middle>,<end>`
+and put them in one `ask_user` card: "Here's the look. Keep going?" with
+"Looks right, finish it" (recommended) and "Change the feel". This is one look
+check, not an approval chain: no storyboard files, no second preview, and skip
+it entirely for short videos, edits, detailed briefs or when the user asked you
+not to stop.
 
 ## Bind inputs and build
 
@@ -151,6 +179,24 @@ For implementation details, consult only the relevant runtime document:
 
 Run `hf doctor` once before the first render. Reuse healthy setup and preview
 servers.
+
+## Sound and footage
+
+- **Music.** Pick from the built-in library by mood (`library.json` in the
+  music folder), use the user's track with its beat grid from `hf beats`, or
+  compose with `score-synth.mjs` when no track fits. Record the file and its
+  beat grid on the `Audio` line; time major reveals to strong cues and pass the
+  grid to `motion_check` as `beats`.
+- **Voice.** Write the script for the ear: short sentences, numbers as they are
+  said. Generate it once with `generate_speech`, then time scenes to its
+  `words.json`, not the other way round. Captions follow the word timings;
+  with `timing: "estimated"`, caption whole phrases, never single words. Duck
+  music under the voice.
+- **Generated footage.** Use `generate_video` only for real-world shots HTML
+  and 3D can't draw (a pour, a street, a texture) and only after the user
+  agreed to the cost. Start from a `generate_image` still in the video's
+  palette, one shot per call, no text in the clip. Never generate real people
+  or present generated footage as real.
 
 ## Edit an existing project
 

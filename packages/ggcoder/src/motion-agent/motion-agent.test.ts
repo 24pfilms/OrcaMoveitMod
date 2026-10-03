@@ -160,7 +160,7 @@ describe("Motion agent", () => {
     ]
       .map((label) => label.trim())
       .filter(Boolean);
-    expect(labels).toHaveLength(25);
+    expect(labels).toHaveLength(28);
     expect(labels).toEqual(
       expect.arrayContaining(["My logo or colours", "My photos or videos", "Nothing, start fresh"]),
     );
@@ -427,7 +427,11 @@ describe("Motion agent", () => {
     expect(options.globalSubagents).toBe(false);
     expect(options.allowedTools).toEqual([...MOTION_TOOL_NAMES]);
     expect(options.allowedMcpServers).toEqual([]);
-    expect(options.additionalTools?.map((tool) => tool.name)).toEqual(["motion_check"]);
+    expect(options.additionalTools?.map((tool) => tool.name)).toEqual([
+      "motion_check",
+      "generate_speech",
+      "generate_video",
+    ]);
     for (const name of [
       "spawn_agent",
       "subagent",
@@ -448,6 +452,8 @@ describe("Motion agent", () => {
       "web_search",
       "web_fetch",
       "generate_image",
+      "generate_speech",
+      "generate_video",
       "motion_check",
     ])
       expect(options.allowedTools).toContain(name);

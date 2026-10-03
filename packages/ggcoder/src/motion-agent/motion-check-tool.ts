@@ -24,7 +24,28 @@ const parameters = motionRegistrationSchema.omit({ depth: true, references: true
     .describe(
       "Quick pre-check of only the rendered frames inside `windows`; never the delivery check.",
     ),
+  beats: z
+    .string()
+    .min(1)
+    .max(1000)
+    .optional()
+    .describe(
+      "Beat grid the video is timed to (a cues file, score-synth tempo-map.json or `hf beats` " +
+        "output). Adds advisory cut-to-beat offsets under `rhythm`; never fails the check.",
+    ),
 });
+const rhythmSchema = z.union([
+  z
+    .object({
+      ok: z.literal(true),
+      cuts: z.number(),
+      onBeat: z.number(),
+      onBeatRatio: z.number().nullable(),
+      offBeat: z.array(z.record(z.string(), z.unknown())).max(200),
+    })
+    .passthrough(),
+  z.object({ ok: z.literal(false), error: z.string() }),
+]);
 const binariesSchema = z.object({
   ffmpeg: z.string().refine(path.isAbsolute),
   ffprobe: z.string().refine(path.isAbsolute),
@@ -333,6 +354,7 @@ export function createMotionCheckTool(
       "moments a targeted fix or small edit changed, then run the full check once on the " +
       "export you deliver. A spot check is never delivery verification. " +
       "Unchanged project source reuses its last passing full source check. " +
+      "Pass `beats` when the video is timed to music to get advisory cut-to-beat offsets. " +
       "This does not approve creative quality or watch/listen to the full video. Do not repeat the " +
       "same checks manually or recheck an unchanged export unless you corrected its hold plan. " +
       "All paths must stay inside the workspace.",
@@ -547,6 +569,29 @@ export function createMotionCheckTool(
             });
           }
         }
+        // Advisory rhythm evidence: outside `checks` so an off-beat accent never fails delivery.
+        let rhythm: z.infer<typeof rhythmSchema> | undefined;
+        if (input.beats) {
+          const beats = await motionPath(cwd, input.beats);
+          try {
+            const result = await exec(
+              process.execPath,
+              [path.join(bundle.root, "bin", "beat-sync.mjs"), output, beats],
+              {
+                signal: AbortSignal.any([signal, AbortSignal.timeout(STEP_MS)]),
+                maxBuffer: 1024 * 1024,
+                windowsHide: true,
+              },
+            );
+            rhythm = rhythmSchema.parse(JSON.parse(result.stdout));
+          } catch (error) {
+            signal.throwIfAborted();
+            rhythm = {
+              ok: false,
+              error: `Beat alignment unavailable: ${String(error).slice(0, 500)}`,
+            };
+          }
+        }
         const id = randomUUID();
         const directory = path.join(path.dirname(output), `.motion-review-${id}`);
         config = path.join(os.tmpdir(), `gg-motion-check-${id}.json`);
@@ -600,6 +645,7 @@ export function createMotionCheckTool(
                 output,
                 checks,
                 coverage: evidence.manifest.range,
+                ...(rhythm ? { rhythm } : {}),
                 visual:
                   "Inspect the attached rendered frames against the video's plan and inputs. These are samples, not playback or audio listening. No creative approval has been granted.",
               }),

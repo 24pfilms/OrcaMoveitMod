@@ -1,6 +1,6 @@
 ---
 name: video-qa
-description: One output-checking pass for a rendered Motion video. Use motion_check for technical checks and rendered images, inspect them in this session, fix concrete defects and deliver. No independent AI reviewer or creative approval ceremony.
+description: One output-checking pass for a rendered Motion video. Use motion_check for technical checks and rendered images, inspect them in this session, score the craft once against the plan, fix concrete defects and deliver. No independent AI reviewer or creative approval ceremony.
 ---
 
 # Check the actual output once
@@ -37,9 +37,21 @@ Still images do not prove pacing at normal speed or that audio was heard. Use ac
 
 If the tool fails, its check details list each problem with where and when it occurs, plus renderer notes such as undeclared fonts. Use them to diagnose the concrete problem; do not rerun the check by hand to see them. Runtime command details live in [technical diagnostics](../../references/runtime/lint-validate-inspect.md); they are troubleshooting references, not an extra mandatory pass. Never introduce generic drift, extra effects or layout changes just to satisfy a heuristic. If a real accessibility requirement conflicts with the plan, fix the accessibility problem.
 
+## 2b. Score the craft once (new videos)
+
+For a new video, once the technical check passes, score the same returned images
+with the [creative rubric](../../references/creative-rubric.md): seven
+dimensions, evidence only, one round of fixes for anything at 2 or below. When
+`motion_check` reports beat alignment, use it for the **Rhythm** score instead of
+guessing from stills. Skip this for copy edits and small fixes; rescore only what
+an edit touched.
+
+The rubric turns "it could be better" into a named, located fix. It does not
+license a redesign: dimensions at 3 or above stay as they are.
+
 ## 3. Fix only a concrete defect
 
-A failed check or visibly wrong output warrants a targeted fix, a new versioned render and a spot check of the fixed moments, then one full check once they are clean. An unchanged export does not need checking again unless you corrected its hold plan; that re-check reuses the passing source audit, so it is quick. Do not iterate toward subjective perfection or route the result to another reviewer. Report an unresolved blocker as draft/unverified rather than looping indefinitely or declaring success.
+A failed check, a rubric score of 2 or below, or visibly wrong output warrants a targeted fix, a new versioned render and a spot check of the fixed moments, then one full check once they are clean. An unchanged export does not need checking again unless you corrected its hold plan; that re-check reuses the passing source audit, so it is quick. Do not iterate toward subjective perfection or route the result to another reviewer. Report an unresolved blocker as draft/unverified rather than looping indefinitely or declaring success.
 
 The tool measures audio, reports its integrated loudness and true peak, and rejects non-finite levels or clipping; it does not normalize the file. Follow the user's delivery loudness target when they give one. Do not add audio to silent work or force every supplied animation through a generic -14 LUFS mix.
 
